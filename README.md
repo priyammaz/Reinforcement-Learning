@@ -1,6 +1,6 @@
 # Project Greed
-### Group: LeepDearning
-### Members: Priyam Mazumdar, Gowathami Venkateswaran, Yang Yue
+#### Group: LeepDearning
+#### Members: Priyam Mazumdar, Gowathami Venkateswaran, Yang Yue
 
 ## Setup:
 ###  Setting Up Environment
