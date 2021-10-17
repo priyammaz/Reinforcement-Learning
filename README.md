@@ -13,7 +13,7 @@ pip install -r requirements.txt
 ```
 
 ### Setting up Pytorch
-Go to [here](https://pytorch.org) to get the conda command for your version of OS and Version
+Go to [here](https://pytorch.org) to get the conda command for your OS and Version
 
 ### Setting up Atari Games:
 - Download ROMS from [here](http://www.atarimania.com/rom_collection_archive_atari_2600_roms.html).  
