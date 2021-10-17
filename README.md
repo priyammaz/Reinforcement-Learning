@@ -9,8 +9,11 @@ Install anaconda on your computer and use the following commands to build the en
 ```
 conda create --name "gym_atari" python=3.8
 conda install pip
-pip install -r requirements.txt 
+pip install -r requirements.txt
 ```
+
+### Setting up Pytorch
+Go to [here](https://pytorch.org) to get the conda command for your version of OS and Version
 
 ### Setting up Atari Games:
 - Download ROMS from [here](http://www.atarimania.com/rom_collection_archive_atari_2600_roms.html).  
