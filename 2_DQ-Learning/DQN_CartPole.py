@@ -1,5 +1,5 @@
 import sys
-sys.path.append("4_Models")
+sys.path.append("Models")
 sys.path.append("utils")
 
 import numpy as np
