@@ -95,6 +95,7 @@ if __name__ == "__main__":
                   eps_end=0.01, input_dims=input_shape, lr=0.0005)
 
     scores, eps_history = [], []
+    avg_scores, min_scores, max_scores = [], [], []
     n_games = 200
 
     for i in range(n_games):
@@ -119,10 +120,17 @@ if __name__ == "__main__":
 
         scores.append(score)
         eps_history.append(agent.epsilon)
-        avg_score = np.mean(scores[-100:])
+        avg_score = np.mean(scores[-30:])
+        avg_scores.append(avg_score)
+        min_score = np.min(scores[-30:])
+        min_scores.append(min_score)
+        max_score = np.max(scores[-30:])
+        max_scores.append(max_score)
 
         print("episode {}, score {}, average_score {}".format(i, round(score, 2), round(avg_score, 2)))
 
     x = [i + 1 for i in range(n_games)]
+
+    plot_reward(episodes=x, avg_score=avg_scores, min_score=min_scores, max_score=max_scores, game_name="CartPole")
 
 
