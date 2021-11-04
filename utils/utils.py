@@ -180,7 +180,7 @@ def build_env(env_name, repeat=4, phi=4, shape=(84,84,1)):
     shape: final shape to feed into network
     """
 
-    env = gym.make(env_name, render_mode="rgb_array")
+    env = gym.make(env_name)
     env = FlickerReductionAndRepeat(repeat=repeat, env=env)
     env = PreprocessAndStackFrames(shape=shape, phi=phi, env=env)
     return env
