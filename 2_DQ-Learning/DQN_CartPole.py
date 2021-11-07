@@ -1,12 +1,12 @@
 import sys
-sys.path.append("Models")
+sys.path.append("Models/model_architecture")
 sys.path.append("utils")
 
 import numpy as np
 import torch
 import gym
 
-from DQN_priyam import DeepQNetwork
+from DeepQNetworkDense import DQNDense
 from utils import TimeCapsule, plot_reward
 
 class Alfred():
@@ -23,12 +23,12 @@ class Alfred():
         self.batch_size = batch_size
         self.eps_end = eps_end
 
-        self.DQN = DeepQNetwork(self.lr, n_actions=n_actions, input_dims=self.input_dims)
+        self.DQN = DQNDense(self.lr, n_actions=n_actions, input_dims=self.input_dims)
 
-        self.timecapsule = TimeCapsule(self.total_memories )
+        self.timecapsule = TimeCapsule(self.total_memories)
 
-    def store_transition(self, state, action, reward, state_, done):
-        self.timecapsule.memorize(state, action, reward, done, state_)
+    def store_transition(self, observation, action, reward, new_observation, done):
+        self.timecapsule.memorize(observation, action, reward, done, new_observation)
 
     def choose_action(self, observation):
         if np.random.random() > self.epsilon:
