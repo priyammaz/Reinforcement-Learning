@@ -61,6 +61,51 @@ class TimeCapsule():
 
         return curr_observations, actions, rewards, new_observations, end_games
 
+class TimeCapsule2():
+    def __init__(self, max_mems, input_shape):
+        self.max_mems = max_mems  # Total number of memories we will store, more mems is more ram
+        self.stored_mems = 0  # To iterate and keep track of number of memories
+
+        """
+        Look up the deque data structure, it is basically a double linked list. The reason we will use this is
+        we can set a max size of the list. Lets say we set the max to 3. As we append memories on we will fill the list
+        like expected, but once we append the 4 item on, the 1st item gets removed from the beginning, thus always keeping
+        3 in the list. The actual value we choose will be the size of the total number of memories we want to store. 
+        """
+        self.curr_observation = np.zeros((self.max_mems, *input_shape), dtype=np.float32)
+        self.action = np.zeros(self.max_mems, dtype=np.int64)
+        self.reward = np.zeros(self.max_mems, dtype=np.float32)
+        self.new_observation = np.zeros((self.max_mems, *input_shape), dtype=np.float32)
+        self.end_game = np.zeros(self.max_mems, dtype=np.bool)
+
+    def memorize(self, observation, action, reward, done, new_observation):
+        """
+        After every iteration, we want to store the memory of what happened, so we can
+        then randomly sample it later
+        """
+        index = self.stored_mems % self.max_mems
+        self.curr_observation[index] = observation
+        self.action[index] = action
+        self.reward[index] = reward
+        self.new_observation[index] = new_observation
+        self.end_game[index] = done
+        self.stored_mems += 1
+
+    def recall(self, batch_size):
+        if self.stored_mems >=  self.max_mems:
+          total_available =  self.max_mems
+        else:
+          total_available = self.stored_mems
+
+        random_chosen = np.random.choice(total_available, batch_size, replace=False)
+
+        curr_observations = self.curr_observation[random_chosen]
+        actions = self.action[random_chosen]
+        rewards = self.reward[random_chosen]
+        new_observations = self.new_observation[random_chosen]
+        end_games = self.end_game[random_chosen]
+
+        return curr_observations, actions, rewards, new_observations, end_games
 
 class FlickerReductionAndRepeat(gym.Wrapper):
     """
@@ -97,7 +142,7 @@ class FlickerReductionAndRepeat(gym.Wrapper):
             if done:
                 break
 
-        maxxed_frame = np.max(np.array(self.flicker_buffer), axis=0) # Take the max of the last two consective frames
+        maxxed_frame = np.maximum(np.array(self.flicker_buffer[0]), np.array(self.flicker_buffer[1])) # Take the max of the last two consective frames
         return maxxed_frame, total_rewards, done, info
 
     def reset(self):
@@ -106,7 +151,7 @@ class FlickerReductionAndRepeat(gym.Wrapper):
         and appending on the new observation retrieved from reset
         """
         observation = self.env.reset()
-        self.flicker_buffer = deque(maxlen=2)
+        self.flicker_buffer.clear()
         self.flicker_buffer.append(observation)
 
         return observation
