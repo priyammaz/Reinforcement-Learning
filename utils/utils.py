@@ -4,13 +4,16 @@ import cv2
 import gym
 import numpy as np
 
-def plot_reward(episodes, avg_scores, epsilon, game_name):
+def plot_reward(episodes, avg_score, min_score, max_score, epsilon, game_name):
   fig, ax1 = plt.subplots()
-  if len(episodes) == len(avg_scores):
+  if len(episodes) == len(avg_score):
     color = 'tab:blue'
     ax1.set_xlabel(' Training Episode')
     ax1.set_ylabel('Reward Score per Episode', color=color)
-    ax1.plot(episodes, avg_scores,color=color)
+    ax1.plot(episodes, avg_score, label='Average')
+    ax1.plot(episodes, min_score, label='Minimum')
+    ax1.plot(episodes, max_score, label='Maximum')
+    ax1.legend(loc=2)
     
     ax2 = ax1.twinx()
     color = 'tab:red'
