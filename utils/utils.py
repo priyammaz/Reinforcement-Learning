@@ -21,7 +21,6 @@ def plot_reward(episodes, avg_scores, epsilon, game_name):
     fig.tight_layout() 
     plt.show()
 
-
 class TimeCapsule():
     def __init__(self, max_mems):
         self.max_mems = max_mems  # Total number of memories we will store, more mems is more ram
