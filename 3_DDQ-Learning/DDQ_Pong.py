@@ -23,7 +23,7 @@ class Alfred():
         self.replace = replace
         self.gamma = gamma
 
-        self.name = "breakout"
+        self.name = "pong"
         self.num_actions_taken = 0
 
         self.timecapsule = TimeCapsule2(self.total_memories, input_shape)
@@ -118,10 +118,9 @@ class Alfred():
 
 if __name__ == "__main__":
     env = build_env("PongNoFrameskip-v4")
-    best_score = 28.34
-    wanted_score = 100
-    load_checkpoint = True
-    n_games = 1000
+    best_score = -np.inf
+    load_checkpoint = False
+    n_games = 500
     when_render = 1
     alfred = Alfred(lr=0.0001, output_actions=env.action_space.n,
                     input_shape=(env.observation_space.shape),
@@ -134,8 +133,7 @@ if __name__ == "__main__":
     scores, eps_history, steps_array = [], [], []
 
     counter = 0
-    while True:
-    # for i in range(n_games):
+    for i in range(n_games):
         if counter % when_render == 0:
             render = True
         else:
@@ -152,7 +150,6 @@ if __name__ == "__main__":
             new_observation, reward, done, info = env.step(action)
             score += reward
             num_steps += 1
-            # if not load_checkpoint:
             alfred.store_transition(observation, action, reward, new_observation, done)
             alfred.learn()
             observation = new_observation
@@ -166,14 +163,10 @@ if __name__ == "__main__":
                                                                                                round(alfred.epsilon,2),
                                                                                                num_steps))
         if avg_score > best_score:
-            # if not load_checkpoint:
             alfred.save_models()
             best_score = avg_score
         counter += 1
 
-        if avg_score > wanted_score:
-            print("End Training")
-            break
 
 
 
