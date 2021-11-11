@@ -6,17 +6,18 @@ from utils import TimeCapsule2, build_env
 from DeepQNetworkConvolution import DQNConv
 import numpy as np
 import torch
+import torch.nn as nn
 
 class Alfred():
     def __init__(self, lr, output_actions, input_shape, total_memories,
-                 batch_size, gamma, min_epsilon=0.1,
-                 epsilon_decrement=1e-6, replace=1000):
+                 batch_size, gamma, min_epsilon=0.05,
+                 epsilon_decrement=5e-5, replace=1000):
         self.lr = lr
         self.output_actions = output_actions
         self.input_shape = input_shape
         self.total_memories = total_memories
         self.batch_size = batch_size
-        self.epsilon = 1
+        self.epsilon = 0.05
         self.min_epsilon = min_epsilon
         self.epsilon_decrement = epsilon_decrement
         self.replace = replace
@@ -35,6 +36,15 @@ class Alfred():
                                     input_shape=self.input_shape,
                                     model_name=self.name + "_copy_network")
 
+        # if torch.cuda.device_count() > 1:
+        #     print("Training on ", torch.cuda.device_count(), "GPU's!")
+        #     self.training_network = nn.DataParallel(self.training_network)
+        #     self.copy_network = nn.DataParallel(self.copy_network)
+        #
+        # self.training_network.to(self.training_network.device)
+        # self.copy_network.to(self.copy_network.device)
+
+
     def store_transition(self, observation, action, reward, new_observation, done):
         self.timecapsule.memorize(observation, action, reward, done, new_observation)
 
@@ -50,7 +60,7 @@ class Alfred():
 
     def lower_random(self):
         if self.epsilon > self.min_epsilon:
-            self.epsilon = self.epsilon - self.epsilon - self.epsilon_decrement
+            self.epsilon = self.epsilon - self.epsilon_decrement
         else:
             self.epsilon = self.min_epsilon
 
@@ -114,7 +124,7 @@ if __name__ == "__main__":
     when_render = 1
     alfred = Alfred(lr=0.0001, output_actions=env.action_space.n,
                     input_shape=(env.observation_space.shape),
-                    total_memories=50000, batch_size=32, gamma=0.99)
+                    total_memories=200000, batch_size=128, gamma=0.99)
 
     if load_checkpoint:
         alfred.load_models()
@@ -122,49 +132,40 @@ if __name__ == "__main__":
     num_steps = 0
     scores, eps_history, steps_array = [], [], []
 
+    counter = 0
     for i in range(n_games):
-        if i % when_render == 0:
+        if counter % when_render == 0:
             render = True
         else:
             render = False
-
         done = False
         score = 0
-
         observation = env.reset()
 
 
         while not done:
             if render:
                 env.render()
-
             action = alfred.choose_action(observation)
-
             new_observation, reward, done, info = env.step(action)
-
             score += reward
-
-            if not load_checkpoint:
-
-                alfred.store_transition(observation, action, reward, new_observation, done)
-                alfred.learn()
-
+            num_steps += 1
+            alfred.store_transition(observation, action, reward, new_observation, done)
+            alfred.learn()
             observation = new_observation
-
         scores.append(score)
         steps_array.append(num_steps)
-
         avg_score = np.mean(scores[-100:])
-        print("Episode {}, Score {}, Avg Score {}, Best Score {}, Epsilon {}, Steps {}".format(i,
+        print("Episode {}, Score {}, Avg Score {}, Best Score {}, Epsilon {}, Steps {}".format(counter,
                                                                                                score,
                                                                                                round(avg_score,2),
                                                                                                round(best_score,2),
                                                                                                round(alfred.epsilon,2),
                                                                                                num_steps))
         if avg_score > best_score:
-            if not load_checkpoint:
-                alfred.save_models()
+            alfred.save_models()
             best_score = avg_score
+        counter += 1
 
 
 
