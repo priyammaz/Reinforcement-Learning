@@ -4,15 +4,24 @@ import cv2
 import gym
 import numpy as np
 
-def plot_reward(episodes, avg_score, min_score, max_score, game_name):
+def plot_reward(episodes, avg_score, min_score, max_score, epsilon, game_name):
+  fig, ax1 = plt.subplots()
   if len(episodes) == len(avg_score):
-    plt.plot(episodes, avg_score, label='Average')
-    plt.plot(episodes, min_score, label='Minimum')
-    plt.plot(episodes, max_score, label='Maximum')
-    plt.legend(loc=2)
-    plt.xlabel('Training Episodes')
-    plt.ylabel('Reward per Episode')
+    color = 'tab:blue'
+    ax1.set_xlabel(' Training Episode')
+    ax1.set_ylabel('Reward Score per Episode', color=color)
+    ax1.plot(episodes, avg_score, label='Average')
+    ax1.plot(episodes, min_score, label='Minimum')
+    ax1.plot(episodes, max_score, label='Maximum')
+    ax1.legend(loc=2)
+    
+    ax2 = ax1.twinx()
+    color = 'tab:red'
+    ax2.set_ylabel('Epsilon', color=color)  # we already handled the x-label with ax1
+    ax2.plot(episodes, epsilon, color=color)
+    
     plt.title('Reward on '+game_name)
+    fig.tight_layout() 
     plt.show()
 
 class TimeCapsule():
