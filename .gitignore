@@ -130,3 +130,5 @@ dmypy.json
 
 # Idea File
 .idea
+
+Models/model_store
