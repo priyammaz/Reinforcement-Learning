@@ -2,8 +2,8 @@ import sys
 sys.path.append("Models/model_architecture")
 sys.path.append("utils")
 
-from utils import TimeCapsule2, build_env
-from DeepQNetworkConvolution import DQNConv
+from utils import TimeCapsule2, build_env, plot_scores
+from DuelingDeepQConvolution import DuelingDeepQNetwork
 import numpy as np
 import torch
 import torch.nn as nn
@@ -27,11 +27,11 @@ class Alfred():
         self.num_actions_taken = 0
 
         self.timecapsule = TimeCapsule2(self.total_memories, input_shape)
-        self.training_network = DQNConv(lr=self.lr,
+        self.training_network = DuelingDeepQNetwork(lr=self.lr,
                                         output_actions=self.output_actions,
                                         input_shape=self.input_shape,
                                         model_name=self.name + "_training_network_bn")
-        self.copy_network = DQNConv(lr=self.lr,
+        self.copy_network = DuelingDeepQNetwork(lr=self.lr,
                                     output_actions=self.output_actions,
                                     input_shape=self.input_shape,
                                     model_name=self.name + "_copy_network_bn")
@@ -42,8 +42,8 @@ class Alfred():
     def choose_action(self, observation):
         if np.random.random() > self.epsilon:
             observation = torch.tensor([observation], dtype=torch.float32).to(self.training_network.device)
-            q_actions = self.training_network.forward(observation)
-            action = torch.argmax(q_actions).item()
+            _, advantage = self.training_network.forward(observation)
+            action = torch.argmax(advantage).item()
         else:
             action = np.random.choice([act for act in range(self.output_actions)])
 
@@ -84,13 +84,17 @@ class Alfred():
             rewards = torch.tensor(rewards).to(self.training_network.device)
             dones = torch.tensor(dones).to(self.training_network.device)
 
-            # Pass through current observation and get the q of actions taken
-            q_actions_taken = self.training_network.forward(observations)[batch_index, actions]
+            value_state, advantage_state = self.training_network.forward(observations)
+            new_value_state, new_advantage_state = self.copy_network.forward(new_observations)
 
-            # Get the target q value
-            q_max_target = self.copy_network.forward(new_observations)
+            # advantage_form = advantage_state - advantage_state.mean(dim=1, keepdim=True)
+            q_actions_taken = torch.add(value_state,
+                                        (advantage_state - advantage_state.mean(dim=1, keepdim=True)))[batch_index, actions]
 
-            # If the game completed, there is no next, so set to 0
+            # next_advantage_form = new_advantage_state - new_advantage_state.mean(dim=1, keepdim=True)
+            q_max_target = torch.add(new_value_state,
+                                     (new_advantage_state - new_advantage_state.mean(dim=1, keepdim=True)))
+
             q_max_target[dones] = 0.0
 
             ### Calculate Target ###
@@ -111,7 +115,7 @@ if __name__ == "__main__":
     env = build_env("PongNoFrameskip-v4")
     best_score = -np.inf
     load_checkpoint = False
-    n_games = 500
+    n_games = 2
     when_render = 1
     alfred = Alfred(lr=0.0001, output_actions=env.action_space.n,
                     input_shape=(env.observation_space.shape),
@@ -166,14 +170,14 @@ if __name__ == "__main__":
             best_score = avg_score
         counter += 1
 
-    plot_reward(episodes=list(range(n_games)),
-                avg_score=avg_scores,
-                min_score=min_scores,
-                max_score=max_scores,
+    plot_scores(x_axis=list(range(n_games)),
+                scores=scores,
+                avg_scores=avg_scores,
+                min_scores=min_scores,
+                max_scores=max_scores,
                 epsilon=epsilons,
-                game_name=alfred.name)
-
-
+                filename="DuelingDeepQ_Pong",
+                title="Dueling Deep Q Learning on Pong")
 
 
 

@@ -3,8 +3,9 @@ from collections import deque
 import cv2
 import gym
 import numpy as np
+import seaborn as sns
 
-def plot_scores(x_axis,scores,avg_scores,min_scores,max_scores,epsilon,filename):
+def plot_scores(x_axis,scores,avg_scores,min_scores,max_scores,epsilon,filename, title=None):
     n= len(scores)
     running_avg = np.empty(n)
     for t in range(n):
@@ -13,8 +14,8 @@ def plot_scores(x_axis,scores,avg_scores,min_scores,max_scores,epsilon,filename)
     f,a = plt.subplots()
     sns.lineplot(x=x_axis,y=scores,label='Raw',ax=a,color='deepskyblue')
     sns.lineplot(x=x_axis,y=avg_scores,label='Average',ax=a,linestyle='dashdot',color='darkorange')
-    #sns.lineplot(x=x_axis,y=min_scores,label='Minimum',ax=a,linestyle='dashed',color='dimgray')
-    #sns.lineplot(x=x_axis,y=max_scores,label='Maximum',ax=a,linestyle='dashdot',color='dimgrey')
+    sns.lineplot(x=x_axis,y=min_scores,label='Minimum',ax=a,linestyle='dashed',color='dimgray')
+    sns.lineplot(x=x_axis,y=max_scores,label='Maximum',ax=a,linestyle='dashdot',color='dimgrey')
     a.set_xlabel('Training Episodes')
     a.set_ylabel('Scores')
     plt.legend(bbox_to_anchor=(1.1,1),loc='upper left')
@@ -23,7 +24,10 @@ def plot_scores(x_axis,scores,avg_scores,min_scores,max_scores,epsilon,filename)
     sns.lineplot(x=x_axis,y=epsilon,color='aqua',linestyle='dotted')
     a_alt.set_ylabel('Epsilons')
 
-    plt.title('Training History')
+    if title is not None:
+        plt.title(title)
+    else:
+        plt.title('Training History')
     plt.tight_layout()
     plt.savefig(filename,bbox_inches='tight',dpi=200)
 
