@@ -2,7 +2,7 @@ import sys
 sys.path.append("Models/model_architecture")
 sys.path.append("utils")
 
-from utils import TimeCapsule2, build_env
+from utils import TimeCapsule2, build_env, plot_reward
 from DeepQNetworkConvolution import DQNConv
 import numpy as np
 import torch
@@ -17,7 +17,7 @@ class Alfred():
         self.input_shape = input_shape
         self.total_memories = total_memories
         self.batch_size = batch_size
-        self.epsilon = 0.05
+        self.epsilon = 1
         self.min_epsilon = min_epsilon
         self.epsilon_decrement = epsilon_decrement
         self.replace = replace
@@ -30,11 +30,11 @@ class Alfred():
         self.training_network = DQNConv(lr=self.lr,
                                         output_actions=self.output_actions,
                                         input_shape=self.input_shape,
-                                        model_name=self.name + "_training_network")
+                                        model_name=self.name + "_training_network_bn")
         self.copy_network = DQNConv(lr=self.lr,
                                     output_actions=self.output_actions,
                                     input_shape=self.input_shape,
-                                    model_name=self.name + "_copy_network")
+                                    model_name=self.name + "_copy_network_bn")
 
         # if torch.cuda.device_count() > 1:
         #     print("Training on ", torch.cuda.device_count(), "GPU's!")
@@ -124,13 +124,13 @@ if __name__ == "__main__":
     when_render = 1
     alfred = Alfred(lr=0.0001, output_actions=env.action_space.n,
                     input_shape=(env.observation_space.shape),
-                    total_memories=200000, batch_size=128, gamma=0.99)
+                    total_memories=200000, batch_size=64, gamma=0.99)
 
     if load_checkpoint:
         alfred.load_models()
 
     num_steps = 0
-    scores, eps_history, steps_array = [], [], []
+    scores, epsilons, steps_array, min_scores, max_scores, avg_scores = [], [], [], [], [], []
 
     counter = 0
     for i in range(n_games):
@@ -156,6 +156,14 @@ if __name__ == "__main__":
         scores.append(score)
         steps_array.append(num_steps)
         avg_score = np.mean(scores[-100:])
+        min_score = np.min(scores[-100:])
+        max_score = np.max(scores[-100:])
+
+        min_scores.append(min_score)
+        max_scores.append(max_score)
+        avg_scores.append(avg_score)
+        epsilons.append(alfred.epsilon)
+
         print("Episode {}, Score {}, Avg Score {}, Best Score {}, Epsilon {}, Steps {}".format(counter,
                                                                                                score,
                                                                                                round(avg_score,2),
@@ -166,6 +174,13 @@ if __name__ == "__main__":
             alfred.save_models()
             best_score = avg_score
         counter += 1
+
+    plot_reward(episodes=list(range(n_games)),
+                avg_score=avg_scores,
+                min_score=min_scores,
+                max_score=max_scores,
+                epsilon=epsilons,
+                game_name=alfred.name)
 
 
 
