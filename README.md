@@ -13,12 +13,13 @@ by the Box2D games versus using an image input.
 
 ## Setup:
 ###  Setting Up Environment
-Install anaconda on your computer and use the following commands to build the environment
+Install anaconda on your computer and use the following commands to build the environment. This will do the following:
+- Create a **conda** environment called gym with Python 3.8
+- Install requirements for testing (with the exception of Pytorch)
+- Install preloaded games found in /roms folder
 
 ```
-conda create --name "gym_atari" p*ython=3.8
-conda install pip
-pip install -r requirements.txt
+bash setup.sh
 ```
 
 ### Setting up Pytorch
