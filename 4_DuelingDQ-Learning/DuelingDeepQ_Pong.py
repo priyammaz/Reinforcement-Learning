@@ -23,7 +23,7 @@ class Alfred():
         self.replace = replace
         self.gamma = gamma
 
-        self.name = "pong"
+        self.name = "dueling_pong"
         self.num_actions_taken = 0
 
         self.timecapsule = TimeCapsule2(self.total_memories, input_shape)
@@ -87,11 +87,9 @@ class Alfred():
             value_state, advantage_state = self.training_network.forward(observations)
             new_value_state, new_advantage_state = self.copy_network.forward(new_observations)
 
-            # advantage_form = advantage_state - advantage_state.mean(dim=1, keepdim=True)
             q_actions_taken = torch.add(value_state,
                                         (advantage_state - advantage_state.mean(dim=1, keepdim=True)))[batch_index, actions]
 
-            # next_advantage_form = new_advantage_state - new_advantage_state.mean(dim=1, keepdim=True)
             q_max_target = torch.add(new_value_state,
                                      (new_advantage_state - new_advantage_state.mean(dim=1, keepdim=True)))
 
@@ -115,7 +113,7 @@ if __name__ == "__main__":
     env = build_env("PongNoFrameskip-v4")
     best_score = -np.inf
     load_checkpoint = False
-    n_games = 2
+    n_games = 500
     when_render = 1
     alfred = Alfred(lr=0.0001, output_actions=env.action_space.n,
                     input_shape=(env.observation_space.shape),

@@ -2,7 +2,7 @@ import sys
 sys.path.append("Models/model_architecture")
 sys.path.append("utils")
 
-from utils import TimeCapsule2, build_env
+from utils import TimeCapsule2, build_env, plot_scores
 from DeepQNetworkConvolution import DQNConv
 import numpy as np
 import torch
@@ -166,14 +166,14 @@ if __name__ == "__main__":
             best_score = avg_score
         counter += 1
 
-    plot_reward(episodes=list(range(n_games)),
-                avg_score=avg_scores,
-                min_score=min_scores,
-                max_score=max_scores,
+    plot_scores(x_axis=list(range(n_games)),
+                scores=scores,
+                avg_scores=avg_scores,
+                min_scores=min_scores,
+                max_scores=max_scores,
                 epsilon=epsilons,
-                game_name=alfred.name)
-
-
+                filename="DoubleDeepQ_Pong",
+                title="Double Deep Q Learning on Pong")
 
 
 
